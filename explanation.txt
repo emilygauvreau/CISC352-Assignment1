@@ -1,0 +1,18 @@
+function minconflicts (CSP, maxsteps)
+    current = initial complete assignment for csp
+    for i = 1 to max steps do
+        if current is a solution for csp then return current
+        var = randomly chosen conflicted variable
+        value = the value v for var that minimizes conflicts(var, v, current, csp)
+        set var = value in current
+    return failure
+
+
+
+must find a iterative repair method where all queens start on the board
+counts the number of conflicts
+uses heuristic to decide how to fix
+minimum conflicts heuristic moves the piece with the largest number of conflicts
+    to a square in the same column where the conflicts are smallest
+
+- a good start is to put each queen in a different row
