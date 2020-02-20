@@ -14,47 +14,40 @@ class NQueens:
     #                       ]
     #
 
-    # gameboard[row][column]
+    # gameboard[row][column] i think these should be swapped [col][row]
     def __init__(self, fileName):
         # Values of current iteration for `n` Queens in current row of text file
         self.gameBoard = None
         self.queensPositions = None
         self.nQueens = 0
-
         self.createGame(fileName)
 
     # Reads the file in and runs the game for each N in the file
     def createGame(self, fileName):
         nArray = self.readFile(fileName)
         qPositionMatrix = []
-
         # for as many Ns as available
         for n in nArray:
             # Create game board and load current queen positons
             self.gameBoard, self.queensPositions = self.createBoard(n)
             self.nQueens = n
-
             # Try to change positions of queens in the board to satisfy the criteria (CSP)
             self.verifyBoard()
-
             # Display the board and verify position results
             self.displayBoard()
             solution = self.makeQueenPositions()
             print(solution)
             qPositionMatrix.append(solution)
-
         # Output total results
         self.output(qPositionMatrix)
 
     # Create list of row positions of queens in board at correct columns
     def makeQueenPositions(self):
         queensPositions = []
-
         for col in range(self.nQueens):
             for row in range(self.nQueens):
                 if self.gameBoard[col][row] == 'Q':
                     queensPositions.append(row + 1)
-
         return queensPositions
 
     # function depicts the current gameboard as an nxn grid
@@ -70,19 +63,14 @@ class NQueens:
     def createBoard(self, n):
         board = [[0 for i in range(n)] for j in range(n)]
         qPositions = []
-
         excludedRows = []
-
         for x in range(0, n):
-                                                    # Excludes already used rows
+            # Excludes already used rows
             row = choice([i for i in range(0, n) if i not in excludedRows])
-
             excludedRows.append(row)
-
             # Update board and save queen (col, row) position
             board[x][row] = 'Q'
             qPositions.append((x, row))
-
         # Sort positions by columns
         qPositions = sorted(qPositions, key=lambda x: x[0])
         return board, qPositions
@@ -93,8 +81,7 @@ class NQueens:
         for queen in self.queensPositions:
             # determine positions of minimum conflict (if more than 1 row has same min conflict then next step determines
             # "random" position to switch to
-            possibleRows = self.conflictsInColumn(queen)
-
+            possibleRows = self.conflictsInColumn(queen) # queen is tuple (col, row)
             # Only one position available so yeehaw
             if len(possibleRows) == 1:
                 minConflictRow = possibleRows[0]
@@ -102,12 +89,10 @@ class NQueens:
                 # Determine first "random" available position to switch to that ISN'T the same as the original
                 while True:
                     minConflictRow = choice(possibleRows)
-
                     if minConflictRow == queen[1]:
                         possibleRows.remove(minConflictRow)
                     else:
                         break
-
             # swap queens yeehaw
             newPosition = (queen[0], minConflictRow)
             self.moveQueen(queen, newPosition)
@@ -116,7 +101,7 @@ class NQueens:
     def moveQueen(self, currentPosition, newPosition):
         curCol, curRow = currentPosition[0], currentPosition[1]
         newCol, newRow = newPosition[0], newPosition[1]
-
+        # note: col is same for both curpos and newpos
         # self.displayBoard()
         # print("Swap: ({}, {}) for ({}, {})".format(curCol, curRow, newCol, newRow))
         self.gameBoard[curCol][curRow], self.gameBoard[newCol][newRow] = self.gameBoard[curCol][newRow], self.gameBoard[newCol][curRow]
@@ -178,24 +163,18 @@ class NQueens:
     # takes a text file containing multiple n values for the nxn queens game
     # returns an array that contains each n as an int at a new index
     def readFile(self, fileName):
-        # open file
-        file = open(fileName, 'r')
+        file = open(fileName, 'r') # open file
         nArray = []  # array to hold the integers once the txt is stripped
-
         for line in file:
             line = line.strip()
             nArray.append(int(line))
-
         return nArray
 
     # Output the queen position results into the output txt file
     def output(self, solutionMatrix):
-
         sys.stdout = open("nqueens_out.txt", "w")
-
         for value in solutionMatrix:
             print(value, '\n')
-
         sys.stdout.close()
 
 if __name__ == '__main__':
