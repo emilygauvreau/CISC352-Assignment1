@@ -76,7 +76,23 @@ class NQueens:
         return board, qPositions
 
     # Attempts to make the board good by doing one round of swaps but doesn't do anything else
+    # Daniel idea:
+    '''
+    To solve our problem we need preform what seems like a double check
+    -keep looping until problem is solved While not solved:
+                                            verify
+    '''
+    # NOT COMPLETE FUNCTION
     def verifyBoard(self):
+        while True:
+            conflictCount = -1
+            if conflictCount == 0:
+                break
+            for queen in self.queensPositions:
+                if self.conflictsAtPosition(queen) != 0:
+                    self.verifyBoardHelper()
+
+    def verifyBoardHelper(self): # name change as helper - DO NOT RUN CODE WILL FAIL
         # Iterates over Queens at their initial positions
         for queen in self.queensPositions:
             # determine positions of minimum conflict (if more than 1 row has same min conflict then next step determines
