@@ -34,9 +34,9 @@ class NQueens:
             # Try to change positions of queens in the board to satisfy the criteria (CSP)
             self.verifyBoard()
             # Display the board and verify position results
-            self.displayBoard()
             solution = self.makeQueenPositions()
             print(solution)
+            self.displayBoard()
             qPositionMatrix.append(solution)
         # Output total results
         self.output(qPositionMatrix)
@@ -54,7 +54,7 @@ class NQueens:
     def displayBoard(self):
         for row in range(self.nQueens):
             for col in range(self.nQueens):
-                print(self.gameBoard[col][row], end=" ")
+                print(self.gameBoard[col][row], end="   ")
             print("\n")  # adds a new line between each row
         print("\n")  # adds a new line between each gameboard
 
@@ -76,52 +76,52 @@ class NQueens:
         return board, qPositions
 
     # Attempts to make the board good by doing one round of swaps but doesn't do anything else
-    # Daniel idea:
-    '''
-    To solve our problem we need preform what seems like a double check
-    -keep looping until problem is solved While not solved:
-                                            verify
-    '''
-    # NOT COMPLETE FUNCTION
-    def verifyBoard(self):
-        while True:
-            conflictCount = -1
-            if conflictCount == 0:
-                break
-            for queen in self.queensPositions:
-                if self.conflictsAtPosition(queen) != 0:
-                    self.verifyBoardHelper()
 
-    def verifyBoardHelper(self): # name change as helper - DO NOT RUN CODE WILL FAIL
+    def shuffleBoard(self, n): # resets board
+        self.gameBoard, self.queensPositions = self.createBoard(n)
+
+    # works but very slow
+    def verifyBoard(self):
         # Iterates over Queens at their initial positions
-        for queen in self.queensPositions:
-            # determine positions of minimum conflict (if more than 1 row has same min conflict then next step determines
-            # "random" position to switch to
-            possibleRows = self.conflictsInColumn(queen) # queen is tuple (col, row)
-            # Only one position available so yeehaw
-            if len(possibleRows) == 1:
-                minConflictRow = possibleRows[0]
-            else:
-                # Determine first "random" available position to switch to that ISN'T the same as the original
-                while True:
-                    minConflictRow = choice(possibleRows)
-                    if minConflictRow == queen[1]:
-                        possibleRows.remove(minConflictRow)
-                    else:
-                        break
-            # swap queens yeehaw
-            newPosition = (queen[0], minConflictRow)
-            self.moveQueen(queen, newPosition)
+        swapWillOccur = True # represents if swap will occur with different row
+        swapCounter = 0
+        while swapWillOccur: # while we are still changing rows
+            swapWillOccur = False
+            swapCounter+=1
+            if swapCounter == self.nQueens: # solution is not being found we need to reshuffle
+                self.shuffleBoard(self.nQueens)
+                swapCounter = 0
+            for queen in self.queensPositions:
+                # determine positions of minimum conflict (if more than 1 row has same min conflict then next step determines
+                # "random" position to switch to
+                possibleRows = self.conflictsInColumn(queen) # queen is tuple (col, row)
+                # Only one position available so yeehaw
+                if len(possibleRows) == 1:
+                    minConflictRow = possibleRows[0]
+                else:
+                    # Determine first "random" available position to switch to that ISN'T the same as the original
+                    while True:
+                        minConflictRow = choice(possibleRows)
+                        if minConflictRow == queen[1]:
+                            possibleRows.remove(minConflictRow)
+                        else:
+                            break
+                # swap queens yeehaw
+                newPosition = (queen[0], minConflictRow)
+                queen = self.moveQueen(queen, newPosition)
+                if self.conflictsAtPosition(queen) > 0: # there is conflict
+                    swapWillOccur = True
 
     # Given new and current position, swap the Queen position in the board
     def moveQueen(self, currentPosition, newPosition):
         curCol, curRow = currentPosition[0], currentPosition[1]
-        newCol, newRow = newPosition[0], newPosition[1]
-        # note: col is same for both curpos and newpos
+        newRow = newPosition[1]
+        # note: col is same for both currentPositionos and newPosition
         # self.displayBoard()
         # print("Swap: ({}, {}) for ({}, {})".format(curCol, curRow, newCol, newRow))
-        self.gameBoard[curCol][curRow], self.gameBoard[newCol][newRow] = self.gameBoard[curCol][newRow], self.gameBoard[newCol][curRow]
-        self.queensPositions[curCol] = (newCol, newRow)
+        self.gameBoard[curCol][curRow], self.gameBoard[curCol][newRow] = self.gameBoard[curCol][newRow], self.gameBoard[curCol][curRow]
+        self.queensPositions[curCol] = (curCol, newRow)
+        return self.queensPositions[curCol] # returning new queen location
 
         # self.displayBoard()
 
@@ -159,20 +159,21 @@ class NQueens:
     # Determine the total conflicts where queen is at the current position (row, column and diagonals)
     def conflictsAtPosition(self, position):
         conflicts = 0
-
         for queen in self.queensPositions:
-            if queen != position:
-                # same column
-                if position[0] == queen[0]:
-                    conflicts += 1
+            # same pos
+            if position[0] == queen[0] and position[1] == queen[1]:
+                pass
+            # same column
+            elif position[0] == queen[0]:
+                conflicts += 1
 
-                # same row
-                if position[1] == queen[1]:
-                    conflicts += 1
+            # same row
+            elif position[1] == queen[1]:
+                conflicts += 1
 
-                # on left/right diagonal
-                if abs(position[0] - queen[0]) == abs(position[1] - queen[1]):
-                    conflicts += 1
+            # on left/right diagonal
+            elif abs(position[0] - queen[0]) == abs(position[1] - queen[1]):
+                conflicts += 1
 
         return conflicts
 
