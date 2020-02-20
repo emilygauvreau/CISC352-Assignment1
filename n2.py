@@ -1,5 +1,6 @@
 import sys
 from random import choice
+from math import sqrt
 
 class NQueens:
     # solutions is a matrix of Queen position. Each row is for size n, and each index in a row holds the row of the Queen
@@ -36,8 +37,15 @@ class NQueens:
             # Display the board and verify position results
             solution = self.makeQueenPositions()
             print(solution)
-            self.displayBoard()
+        #    self.displayBoard()
             qPositionMatrix.append(solution)
+            # quick row test
+            temp = {}
+            for i in solution:
+                if i in temp:
+                    print("Fuck - row issue: ", i)
+                else:
+                    temp[i] = True
         # Output total results
         self.output(qPositionMatrix)
 
@@ -88,7 +96,7 @@ class NQueens:
         while swapWillOccur: # while we are still changing rows
             swapWillOccur = False
             swapCounter+=1
-            if swapCounter == self.nQueens: # solution is not being found we need to reshuffle
+            if swapCounter == sqrt(self.nQueens): # solution is not being found we need to reshuffle
                 self.shuffleBoard(self.nQueens)
                 swapCounter = 0
             for queen in self.queensPositions:
@@ -97,10 +105,13 @@ class NQueens:
                 possibleRows = self.conflictsInColumn(queen) # queen is tuple (col, row)
                 # Only one position available so yeehaw
                 if len(possibleRows) == 1:
+                    if queen[1] != possibleRows[0]: # if our possible row is not alreadly our row
+                        swapWillOccur = True
                     minConflictRow = possibleRows[0]
                 else:
                     # Determine first "random" available position to switch to that ISN'T the same as the original
                     while True:
+                        swapWillOccur = True
                         minConflictRow = choice(possibleRows)
                         if minConflictRow == queen[1]:
                             possibleRows.remove(minConflictRow)
@@ -109,8 +120,8 @@ class NQueens:
                 # swap queens yeehaw
                 newPosition = (queen[0], minConflictRow)
                 queen = self.moveQueen(queen, newPosition)
-                if self.conflictsAtPosition(queen) > 0: # there is conflict
-                    swapWillOccur = True
+                #if self.conflictsAtPosition(queen) > 0: # there is conflict
+                #    swapWillOccur = True
 
     # Given new and current position, swap the Queen position in the board
     def moveQueen(self, currentPosition, newPosition):
