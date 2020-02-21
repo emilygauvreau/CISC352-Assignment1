@@ -77,12 +77,16 @@ class NQueens:
             # Excludes already used rows
             row = choice([i for i in range(0, n) if i not in excludedRows])
             excludedRows.append(row)
+            # ADD TO EXCLUDED ROWS, USING FORWARD CHECKING
             # Update board and save queen (col, row) position
             board[x][row] = 'Q'
             qPositions.append((x, row))
         # Sort positions by columns
         qPositions = sorted(qPositions, key=lambda x: x[0])
         return board, qPositions
+
+    def forwardChecker():
+        pass
 
     def shuffleBoard(self, n): # resets board - helps with local minima problem
         self.gameBoard, self.queensPositions = self.createBoard(n)
@@ -94,7 +98,8 @@ class NQueens:
         while swapWillOccur: # While rows are still being swapped
             swapWillOccur = False
             swapCounter+=1
-            if swapCounter == self.nQueens: # solution is not being found we need to reshuffle
+            print("swap counter is ", swapCounter)
+            if swapCounter == self.nQueens*self.nQueens: # solution is not being found we need to reshuffle
                 self.shuffleBoard(self.nQueens) # should be great than self.nqueens for all possible situations
                 swapCounter = 0
             for queen in self.queensPositions:
