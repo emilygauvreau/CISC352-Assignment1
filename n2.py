@@ -37,18 +37,17 @@ class NQueens:
             # Display the board and verify position results
             solution = self.makeQueenPositions()
             print(solution)
-        #    self.displayBoard()
+            self.displayBoard()
             qPositionMatrix.append(solution)
             # quick row test
             temp = {}
             for i in solution:
                 if i in temp:
-                    print("Fuck - row issue: ", i)
+                    print("Row issue: ", i)
                 else:
                     temp[i] = True
-        # Output total results
+            # Output total results
             self.output(qPositionMatrix)
-        #    self.displayBoard()
 
     # Create list of row positions of queens in board at correct columns
     def makeQueenPositions(self):
@@ -59,7 +58,7 @@ class NQueens:
                     queensPositions.append(row + 1)
         return queensPositions
 
-    # function depicts the current gameboard as an nxn grid
+    # Function depicts the current gameboard as an nxn grid
     def displayBoard(self):
         for row in range(self.nQueens):
             for col in range(self.nQueens):
@@ -74,7 +73,7 @@ class NQueens:
         qPositions = []
         excludedRows = []
         for x in range(0, n):
-            # idea is to generate best possible start state to reduce computations
+            # Idea is to generate best possible start state to reduce computations
             # Excludes already used rows
             row = choice([i for i in range(0, n) if i not in excludedRows])
             excludedRows.append(row)
@@ -85,41 +84,26 @@ class NQueens:
         qPositions = sorted(qPositions, key=lambda x: x[0])
         return board, qPositions
 
-    # Attempts to make the board good by doing one round of swaps but doesn't do anything else
-    # daniel methods
-
-    def shuffleBoard(self, n): # resets board
+    def shuffleBoard(self, n): # resets board - helps with local minima problem
         self.gameBoard, self.queensPositions = self.createBoard(n)
 
-    # daniel methods
-    # works but very slow
     def verifyBoard(self):
         # Iterates over Queens at their initial positions
-        swapWillOccur = True # represents if swap will occur with different row
-        swapCounter = 0
-    #    probFactor = 1/self.nQueens # this will be used to determine next move
-        while swapWillOccur: # while we are still changing rows
+        swapWillOccur = True # Represents if swap will occur with different row
+        swapCounter = 0 # Counts number of swaps - helps detect local minima
+        while swapWillOccur: # While rows are still being swapped
             swapWillOccur = False
             swapCounter+=1
-        #    if probFactor < 1:
-        #        probFactor += 0.00001
-        #    else:
-        #        probFactor = 1/self.nQueens
             if swapCounter == self.nQueens: # solution is not being found we need to reshuffle
                 self.shuffleBoard(self.nQueens) # should be great than self.nqueens for all possible situations
                 swapCounter = 0
-    #            probFactor = 1/self.nQueens
             for queen in self.queensPositions:
-                # determine positions of minimum conflict (if more than 1 row has same min conflict then next step determines
+                # determine positions of minimum conflict
+                # if more than 1 row has same min conflict then
+                # next step determines
                 # "random" position to switch to
                 possibleRows, minConflicts = self.conflictsInColumn(queen) # queen is tuple (col, row)
                 # Only one position available so yeehaw
-            #    rowIdx = int(probFactor*randint(0, len(possibleRows)-2))
-            #    print("row idx is: ", rowIdx)
-            #    print("row idx is ", rowIdx)
-            #    print(possibleRows)
-            #    minConflictRow = possibleRows[0][0]
-
                 if len(possibleRows) == 1:
                     minConflictRow = possibleRows[0]
                 else:
@@ -132,30 +116,21 @@ class NQueens:
                             break
 
                 # swap queens yeehaw
-                # problem is the we will sometimes keep chosing ourself
-                # as we might have the imediate smaller problem - hence the local
-                # minimum stuck
                 if minConflictRow != queen[1] or minConflicts > 0: # new row - so new conflict could occur
                     swapWillOccur = True
-                #    print("SWAPPPPPPP IS TRUE")
                 newPosition = (queen[0], minConflictRow)
                 queen = self.moveQueen(queen, newPosition)
-            #    self.displayBoard()
-            #    if self.conflictsAtPosition(queen) > 0: # there is conflict
-            #        swapWillOccur = True
 
     # Given new and current position, swap the Queen position in the board
     def moveQueen(self, currentPosition, newPosition):
         curCol, curRow = currentPosition[0], currentPosition[1]
         newRow = newPosition[1]
-        # note: col is same for both currentPositionos and newPosition
+        # note: col is same for both currentPosition and newPosition
         # self.displayBoard()
         # print("Swap: ({}, {}) for ({}, {})".format(curCol, curRow, newCol, newRow))
         self.gameBoard[curCol][curRow], self.gameBoard[curCol][newRow] = self.gameBoard[curCol][newRow], self.gameBoard[curCol][curRow]
         self.queensPositions[curCol] = (curCol, newRow)
-        return self.queensPositions[curCol] # returning new queen location
-
-        # self.displayBoard()
+        return self.queensPositions[curCol] # Returning new queen location
 
     # Determine the rows with minimum conflicts in the same column as the current queen
     def conflictsInColumn(self, position):
