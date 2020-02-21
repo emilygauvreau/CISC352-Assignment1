@@ -135,11 +135,9 @@ class NQueens:
     # Determine the rows with minimum conflicts in the same column as the current queen
     def conflictsInColumn(self, position):
         col, row = position[0], position[1]
-
         minConflicts = self.conflictsAtPosition(position)
         lowestConflictIndex = position[1]
         minConflictIndices = []
-        #minConflictIndices = {}
         # for as many rows there are
         for i in range(self.nQueens):
             # if not the same row as current queen position
@@ -154,20 +152,13 @@ class NQueens:
                 elif newConflict == minConflicts: # if value already exists then add to available min positions
                     minConflictIndices.append(lowestConflictIndex)
                     minConflictIndices.append(i)
-                #minConflictIndices[i] = newConflict
-    #    minConflictIndices = sorted(minConflictIndices.items(), key=lambda x: x[1])
-                # hopefully above works
-        # If more than one available swap position then return all
         if len(minConflictIndices) != 0:
            return minConflictIndices, minConflicts
-
         # Return lowest swap position
         return [lowestConflictIndex], minConflicts
-        #return minConflictIndices
 
     # position = (column, row)
     # Determine the total conflicts where queen is at the current position (row, column and diagonals)
-# I WANT TO CHANGE SO THAT WE GET INDEX OF EACH CONFLICT
     def conflictsAtPosition(self, position):
         conflicts = 0
         for queen in self.queensPositions:
