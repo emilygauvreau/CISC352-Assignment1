@@ -77,7 +77,7 @@ class NQueens:
             # Excludes already used rows
             row = choice([i for i in range(0, n) if i not in excludedRows])
             excludedRows.append(row)
-            # ADD TO EXCLUDED ROWS, USING FORWARD CHECKING
+            # ADD TO EXCLUDED ROWS (from diagonals) CALL diagonalElmininator
             # Update board and save queen (col, row) position
             board[x][row] = 'Q'
             qPositions.append((x, row))
@@ -85,7 +85,7 @@ class NQueens:
         qPositions = sorted(qPositions, key=lambda x: x[0])
         return board, qPositions
 
-    def forwardChecker():
+    def diagonalElmininator(self, position):
         pass
 
     def shuffleBoard(self, n): # resets board - helps with local minima problem
