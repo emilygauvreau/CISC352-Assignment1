@@ -1,5 +1,5 @@
 import sys
-from random import choice
+from random import choice, randint
 from math import sqrt
 
 class NQueens:
@@ -47,7 +47,8 @@ class NQueens:
                 else:
                     temp[i] = True
         # Output total results
-        self.output(qPositionMatrix)
+            self.output(qPositionMatrix)
+        #    self.displayBoard()
 
     # Create list of row positions of queens in board at correct columns
     def makeQueenPositions(self):
@@ -73,6 +74,7 @@ class NQueens:
         qPositions = []
         excludedRows = []
         for x in range(0, n):
+            # idea is to generate best possible start state to reduce computations
             # Excludes already used rows
             row = choice([i for i in range(0, n) if i not in excludedRows])
             excludedRows.append(row)
@@ -84,44 +86,63 @@ class NQueens:
         return board, qPositions
 
     # Attempts to make the board good by doing one round of swaps but doesn't do anything else
+    # daniel methods
 
     def shuffleBoard(self, n): # resets board
         self.gameBoard, self.queensPositions = self.createBoard(n)
 
+    # daniel methods
     # works but very slow
     def verifyBoard(self):
         # Iterates over Queens at their initial positions
         swapWillOccur = True # represents if swap will occur with different row
         swapCounter = 0
+    #    probFactor = 1/self.nQueens # this will be used to determine next move
         while swapWillOccur: # while we are still changing rows
             swapWillOccur = False
             swapCounter+=1
-            if swapCounter == sqrt(self.nQueens): # solution is not being found we need to reshuffle
-                self.shuffleBoard(self.nQueens)
+        #    if probFactor < 1:
+        #        probFactor += 0.00001
+        #    else:
+        #        probFactor = 1/self.nQueens
+            if swapCounter == self.nQueens: # solution is not being found we need to reshuffle
+                self.shuffleBoard(self.nQueens) # should be great than self.nqueens for all possible situations
                 swapCounter = 0
+    #            probFactor = 1/self.nQueens
             for queen in self.queensPositions:
                 # determine positions of minimum conflict (if more than 1 row has same min conflict then next step determines
                 # "random" position to switch to
-                possibleRows = self.conflictsInColumn(queen) # queen is tuple (col, row)
+                possibleRows, minConflicts = self.conflictsInColumn(queen) # queen is tuple (col, row)
                 # Only one position available so yeehaw
+            #    rowIdx = int(probFactor*randint(0, len(possibleRows)-2))
+            #    print("row idx is: ", rowIdx)
+            #    print("row idx is ", rowIdx)
+            #    print(possibleRows)
+            #    minConflictRow = possibleRows[0][0]
+
                 if len(possibleRows) == 1:
-                    if queen[1] != possibleRows[0]: # if our possible row is not alreadly our row
-                        swapWillOccur = True
                     minConflictRow = possibleRows[0]
                 else:
                     # Determine first "random" available position to switch to that ISN'T the same as the original
                     while True:
-                        swapWillOccur = True
                         minConflictRow = choice(possibleRows)
                         if minConflictRow == queen[1]:
                             possibleRows.remove(minConflictRow)
                         else:
                             break
+
                 # swap queens yeehaw
+                # problem is the we will sometimes keep chosing ourself
+                # as we might have the imediate smaller problem - hence the local
+                # minimum stuck
+                if minConflictRow != queen[1] or minConflicts > 0: # new row - so new conflict could occur
+                    swapWillOccur = True
+                #    print("SWAPPPPPPP IS TRUE")
                 newPosition = (queen[0], minConflictRow)
                 queen = self.moveQueen(queen, newPosition)
-                #if self.conflictsAtPosition(queen) > 0: # there is conflict
-                #    swapWillOccur = True
+            #    self.displayBoard()
+            #    if self.conflictsAtPosition(queen) > 0: # there is conflict
+            #        swapWillOccur = True
 
     # Given new and current position, swap the Queen position in the board
     def moveQueen(self, currentPosition, newPosition):
@@ -143,7 +164,7 @@ class NQueens:
         minConflicts = self.conflictsAtPosition(position)
         lowestConflictIndex = position[1]
         minConflictIndices = []
-
+        #minConflictIndices = {}
         # for as many rows there are
         for i in range(self.nQueens):
             # if not the same row as current queen position
@@ -158,16 +179,20 @@ class NQueens:
                 elif newConflict == minConflicts: # if value already exists then add to available min positions
                     minConflictIndices.append(lowestConflictIndex)
                     minConflictIndices.append(i)
-
+                #minConflictIndices[i] = newConflict
+    #    minConflictIndices = sorted(minConflictIndices.items(), key=lambda x: x[1])
+                # hopefully above works
         # If more than one available swap position then return all
         if len(minConflictIndices) != 0:
-            return minConflictIndices
+           return minConflictIndices, minConflicts
 
         # Return lowest swap position
-        return [lowestConflictIndex]
+        return [lowestConflictIndex], minConflicts
+        #return minConflictIndices
 
     # position = (column, row)
     # Determine the total conflicts where queen is at the current position (row, column and diagonals)
+# I WANT TO CHANGE SO THAT WE GET INDEX OF EACH CONFLICT
     def conflictsAtPosition(self, position):
         conflicts = 0
         for queen in self.queensPositions:
