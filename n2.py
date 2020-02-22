@@ -72,21 +72,57 @@ class NQueens:
         board = [[0 for i in range(n)] for j in range(n)]
         qPositions = []
         excludedRows = []
+        excludedPositions = []
         for x in range(0, n):
             # Idea is to generate best possible start state to reduce computations
             # Excludes already used rows
-            row = choice([i for i in range(0, n) if i not in excludedRows])
+            row = choice([i for i in range(0, n) if i not in excludedRows and (x, i) not in excludedPositions])
+            if row == None:
+                while True:
+                    print("ERRROROROROROROOROROR")
             excludedRows.append(row)
             # ADD TO EXCLUDED ROWS (from diagonals) CALL diagonalElmininator
             # Update board and save queen (col, row) position
             board[x][row] = 'Q'
             qPositions.append((x, row))
+            self.diagonalElmininator((x, row), excludedPositions)
         # Sort positions by columns
         qPositions = sorted(qPositions, key=lambda x: x[0])
+        #self.displayBoard() // CAN'T CALL CAUSE GAME BOARD NOT ASSIGNED
+        print("WUBALABAB DUBB DUBB")
         return board, qPositions
 
-    def diagonalElmininator(self, position):
-        pass
+    def diagonalElmininator(self, position, excludedPositions):
+        # up and to the right
+        i, j = 0, 0
+        while (position[0]+i <= self.nQueens and position[1]+j <= self.nQueens):
+                print("loop 1")
+                excludedPositions.append((position[0]+i, position[1]+j))
+                i+=1
+                j+=1
+        # up and to the left
+        i, j = 0, 0
+        while (position[0]+i <= self.nQueens and position[1]-j >= 0):
+            print("loop 2")
+            excludedPositions.append((position[0]+i, position[1]-j))
+            i+=1
+            j-=1
+        # down and to the right
+        i, j = 0, 0
+        while (position[0]-i >= 0 and position[1]+j <= self.nQueens):
+            print("loop 3")
+            excludedPositions.append((position[0]-i, position[1]+j))
+            i-=1
+            j+=1
+        # down and to the left
+        i, j = 0, 0
+        while (position[0]-i >= 0 and position[1]-j >= 0):
+            print("loop 4")
+            excludedPositions.append((position[0]-i, position[1]-j))
+            i+=1
+            j+=1
+        print("position is: ", position)
+        print("Excluded positions are: ", excludedPositions)
 
     def shuffleBoard(self, n): # resets board - helps with local minima problem
         self.gameBoard, self.queensPositions = self.createBoard(n)
