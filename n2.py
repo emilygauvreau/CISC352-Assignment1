@@ -37,15 +37,13 @@ class NQueens:
             # Display the board and verify position results
             solution = self.makeQueenPositions()
             print(solution)
-            self.displayBoard()
+            #self.displayBoard()
             qPositionMatrix.append(solution)
-            # quick row test
-            temp = {}
-            for i in solution:
-                if i in temp:
-                    print("Row issue: ", i)
-                else:
-                    temp[i] = True
+            # correct output checker
+            for queen in self.queensPositions:
+                if self.conflictsAtPosition(queen) > 0:
+                    print("BAD BOARD")
+                    break
             # Output total results
             self.output(qPositionMatrix)
 
@@ -76,74 +74,67 @@ class NQueens:
         for x in range(0, n):
             # Idea is to generate best possible start state to reduce computations
             # Excludes already used rows
-            row = choice([i for i in range(0, n) if i not in excludedRows and (x, i) not in excludedPositions])
-            if row == None:
-                while True:
-                    print("ERRROROROROROROOROROR")
+            possibleRows = [i for i in range(0, n) if i not in excludedRows and (x, i) not in excludedPositions]
+            if possibleRows == []:
+                row = choice([i for i in range(0, n) if i not in excludedRows])
+            else:
+                row = choice(possibleRows)
             excludedRows.append(row)
             # ADD TO EXCLUDED ROWS (from diagonals) CALL diagonalElmininator
             # Update board and save queen (col, row) position
             board[x][row] = 'Q'
             qPositions.append((x, row))
-            self.diagonalElmininator((x, row), excludedPositions)
+            self.diagonalElmininator((x, row), excludedPositions, n)
         # Sort positions by columns
         qPositions = sorted(qPositions, key=lambda x: x[0])
-        #self.displayBoard() // CAN'T CALL CAUSE GAME BOARD NOT ASSIGNED
-        print("WUBALABAB DUBB DUBB")
         return board, qPositions
 
-    def diagonalElmininator(self, position, excludedPositions):
+    # Works - elminates diagonal postions
+    def diagonalElmininator(self, position, excludedPositions, bSize):
         # up and to the right
-        i, j = 0, 0
-        while (position[0]+i <= self.nQueens and position[1]+j <= self.nQueens):
-                print("loop 1")
-                excludedPositions.append((position[0]+i, position[1]+j))
+        excludedPositions.append(position)
+        i, j = 1, 1
+        while (position[0]-i >= 0 and position[1]+j < bSize):
+                excludedPositions.append((position[0]-i, position[1]+j))
                 i+=1
                 j+=1
         # up and to the left
-        i, j = 0, 0
-        while (position[0]+i <= self.nQueens and position[1]-j >= 0):
-            print("loop 2")
-            excludedPositions.append((position[0]+i, position[1]-j))
-            i+=1
-            j-=1
-        # down and to the right
-        i, j = 0, 0
-        while (position[0]-i >= 0 and position[1]+j <= self.nQueens):
-            print("loop 3")
-            excludedPositions.append((position[0]-i, position[1]+j))
-            i-=1
-            j+=1
-        # down and to the left
-        i, j = 0, 0
+        i, j = 1, 1
         while (position[0]-i >= 0 and position[1]-j >= 0):
-            print("loop 4")
             excludedPositions.append((position[0]-i, position[1]-j))
             i+=1
             j+=1
-        print("position is: ", position)
-        print("Excluded positions are: ", excludedPositions)
+        # down and to the right
+        i, j = 1, 1
+        while (position[0]+i < bSize and position[1]+j < bSize):
+            excludedPositions.append((position[0]+i, position[1]+j))
+            i+=1
+            j+=1
+        # down and to the left
+        i, j = 1, 1
+        while (position[0]+i < bSize and position[1]-j >= 0):
+            excludedPositions.append((position[0]+i, position[1]-j))
+            i+=1
+            j+=1
 
     def shuffleBoard(self, n): # resets board - helps with local minima problem
         self.gameBoard, self.queensPositions = self.createBoard(n)
 
+    # KEEP GETTING STUCK AT LOCAL MINIMA!!!!
     def verifyBoard(self):
         # Iterates over Queens at their initial positions
-        swapWillOccur = True # Represents if swap will occur with different row
-        swapCounter = 0 # Counts number of swaps - helps detect local minima
-        while swapWillOccur: # While rows are still being swapped
-            swapWillOccur = False
-            swapCounter+=1
-            print("swap counter is ", swapCounter)
-            if swapCounter == self.nQueens*self.nQueens: # solution is not being found we need to reshuffle
-                self.shuffleBoard(self.nQueens) # should be great than self.nqueens for all possible situations
-                swapCounter = 0
+        stillConflict = True # Represents if swap will occur with different row
+        while stillConflict: # While rows are still being swapped
+            conflictCount = 0
+            shuffle = 0
+            #print("verify reloop")
             for queen in self.queensPositions:
                 # determine positions of minimum conflict
                 # if more than 1 row has same min conflict then
                 # next step determines
                 # "random" position to switch to
                 possibleRows, minConflicts = self.conflictsInColumn(queen) # queen is tuple (col, row)
+                conflictCount+=minConflicts
                 # Only one position available so yeehaw
                 if len(possibleRows) == 1:
                     minConflictRow = possibleRows[0]
@@ -151,16 +142,22 @@ class NQueens:
                     # Determine first "random" available position to switch to that ISN'T the same as the original
                     while True:
                         minConflictRow = choice(possibleRows)
-                        if minConflictRow == queen[1]:
+                        if minConflictRow == queen[1]: # and minConflictRow != 0
                             possibleRows.remove(minConflictRow)
                         else:
                             break
-
                 # swap queens yeehaw
-                if minConflictRow != queen[1] or minConflicts > 0: # new row - so new conflict could occur
-                    swapWillOccur = True
+                if minConflictRow == queen[1]: # same row - still conflicts (stuck at minima)
+                    shuffle += 1
                 newPosition = (queen[0], minConflictRow)
                 queen = self.moveQueen(queen, newPosition)
+            # we still have the same board as before - we're stuck at a local minima
+            if conflictCount != 0:
+                stillConflict = True
+            else:
+                stillConflict = False
+            if shuffle == self.nQueens and conflictCount > 0:
+                self.shuffleBoard(self.nQueens)
 
     # Given new and current position, swap the Queen position in the board
     def moveQueen(self, currentPosition, newPosition):
@@ -205,7 +202,7 @@ class NQueens:
         for queen in self.queensPositions:
             # same pos
             if position[0] == queen[0] and position[1] == queen[1]:
-                pass
+                continue
             # same column
             elif position[0] == queen[0]:
                 conflicts += 1
@@ -236,6 +233,7 @@ class NQueens:
         for value in solutionMatrix:
             print(value, '\n')
         sys.stdout.close()
+        sys.stdout = sys.__stdout__
 
 if __name__ == '__main__':
     game = NQueens("nqueens.txt")
