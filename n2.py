@@ -20,6 +20,7 @@ class NQueens:
         # Values of current iteration for `n` Queens in current row of text file
         self.gameBoard = None
         self.queensPositions = None
+        self.conflictsAndQueens = None
         self.nQueens = 0
         self.createGame(fileName)
 
@@ -37,7 +38,7 @@ class NQueens:
             # Display the board and verify position results
             solution = self.makeQueenPositions()
             print(solution)
-            #self.displayBoard()
+            self.displayBoard()
             qPositionMatrix.append(solution)
             # correct output checker
             for queen in self.queensPositions:
@@ -66,11 +67,15 @@ class NQueens:
 
 
     # Initialize board with 0s and loads 'Q' into each column at a random row position, avoiding repeated rows
+    # update:
+    # store pos in hashmap, remove once made no good
+    # before I create conflict hashmap, i must reduce possible rows
     def createBoard(self, n):
         board = [[0 for i in range(n)] for j in range(n)]
         qPositions = []
-        excludedRows = []
-        excludedPositions = []
+        excludedRows = {}
+        excludedPositions = {}
+        row = -1
         for x in range(0, n):
             # Idea is to generate best possible start state to reduce computations
             # Excludes already used rows
@@ -79,41 +84,40 @@ class NQueens:
                 row = choice([i for i in range(0, n) if i not in excludedRows])
             else:
                 row = choice(possibleRows)
-            excludedRows.append(row)
-            # ADD TO EXCLUDED ROWS (from diagonals) CALL diagonalElmininator
+            excludedRows[row] = True
             # Update board and save queen (col, row) position
             board[x][row] = 'Q'
             qPositions.append((x, row))
             self.diagonalElmininator((x, row), excludedPositions, n)
         # Sort positions by columns
-        qPositions = sorted(qPositions, key=lambda x: x[0])
+    #    qPositions = sorted(qPositions, key=lambda x: x[0]) # why are we doing this SEEEMS TO BE NO NEED
         return board, qPositions
 
     # Works - elminates diagonal postions
     def diagonalElmininator(self, position, excludedPositions, bSize):
         # up and to the right
-        excludedPositions.append(position)
+        excludedPositions[position] = True
         i, j = 1, 1
         while (position[0]-i >= 0 and position[1]+j < bSize):
-                excludedPositions.append((position[0]-i, position[1]+j))
-                i+=1
-                j+=1
+            excludedPositions[(position[0]-i, position[1]+j)] = True
+            i+=1
+            j+=1
         # up and to the left
         i, j = 1, 1
         while (position[0]-i >= 0 and position[1]-j >= 0):
-            excludedPositions.append((position[0]-i, position[1]-j))
+            excludedPositions[(position[0]-i, position[1]-j)] = True
             i+=1
             j+=1
         # down and to the right
         i, j = 1, 1
         while (position[0]+i < bSize and position[1]+j < bSize):
-            excludedPositions.append((position[0]+i, position[1]+j))
+            excludedPositions[(position[0]+i, position[1]+j)] = True
             i+=1
             j+=1
         # down and to the left
         i, j = 1, 1
         while (position[0]+i < bSize and position[1]-j >= 0):
-            excludedPositions.append((position[0]+i, position[1]-j))
+            excludedPositions[(position[0]+i, position[1]-j)] = True
             i+=1
             j+=1
 
@@ -125,10 +129,12 @@ class NQueens:
         # Iterates over Queens at their initial positions
         stillConflict = True # Represents if swap will occur with different row
         while stillConflict: # While rows are still being swapped
+        #    print("in our verify while loop")
             conflictCount = 0
             shuffle = 0
             #print("verify reloop")
             for queen in self.queensPositions:
+            #    print("working with Queen ", queen)
                 # determine positions of minimum conflict
                 # if more than 1 row has same min conflict then
                 # next step determines
@@ -157,6 +163,7 @@ class NQueens:
             else:
                 stillConflict = False
             if shuffle == self.nQueens and conflictCount > 0:
+                print("SHUFFLE TIME MOTHER FUCKERS")
                 self.shuffleBoard(self.nQueens)
 
     # Given new and current position, swap the Queen position in the board
@@ -187,6 +194,7 @@ class NQueens:
                     minConflicts = newConflict
                     lowestConflictIndex = i
                     minConflictIndices.clear()
+                    break # break the second we find a better choice - this is much faster
                 elif newConflict == minConflicts: # if value already exists then add to available min positions
                     minConflictIndices.append(lowestConflictIndex)
                     minConflictIndices.append(i)
@@ -214,7 +222,6 @@ class NQueens:
             # on left/right diagonal
             elif abs(position[0] - queen[0]) == abs(position[1] - queen[1]):
                 conflicts += 1
-
         return conflicts
 
     # takes a text file containing multiple n values for the nxn queens game
