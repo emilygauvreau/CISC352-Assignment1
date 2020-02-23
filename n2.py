@@ -124,17 +124,14 @@ class NQueens:
     def shuffleBoard(self, n): # resets board - helps with local minima problem
         self.gameBoard, self.queensPositions = self.createBoard(n)
 
-    # KEEP GETTING STUCK AT LOCAL MINIMA!!!!
+
     def verifyBoard(self):
         # Iterates over Queens at their initial positions
-        stillConflict = True # Represents if swap will occur with different row
+        stillConflict = True # Represents if there is a conflict still
         while stillConflict: # While rows are still being swapped
-        #    print("in our verify while loop")
             conflictCount = 0
-            shuffle = 0
-            #print("verify reloop")
+            shuffle = 0 # counter that determines if board needs to be reshuffled
             for queen in self.queensPositions:
-            #    print("working with Queen ", queen)
                 # determine positions of minimum conflict
                 # if more than 1 row has same min conflict then
                 # next step determines
@@ -148,16 +145,17 @@ class NQueens:
                     # Determine first "random" available position to switch to that ISN'T the same as the original
                     while True:
                         minConflictRow = choice(possibleRows)
-                        if minConflictRow == queen[1]: # and minConflictRow != 0
+                        if minConflictRow == queen[1]:
                             possibleRows.remove(minConflictRow)
                         else:
                             break
-                # swap queens yeehaw
-                if minConflictRow == queen[1]: # same row - still conflicts (stuck at minima)
+                # we still have the same board as before - we're stuck at a local minima
+                if minConflictRow == queen[1]: # same row - board not changing
                     shuffle += 1
+                # swap queens yeehaw
                 newPosition = (queen[0], minConflictRow)
                 queen = self.moveQueen(queen, newPosition)
-            # we still have the same board as before - we're stuck at a local minima
+            # if there are still conflicts we continue to reverify the board
             if conflictCount != 0:
                 stillConflict = True
             else:
